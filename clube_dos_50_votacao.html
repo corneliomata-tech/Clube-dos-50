@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Clube dos 50 — Votação</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#182230;--muted:#667085;--line:#d9dee8;--accent:#2563eb;--accent2:#eff6ff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--text)}
+main{max-width:620px;margin:0 auto;padding:28px 16px 40px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:0 8px 30px #0000000b}
+h1{font-size:28px;margin:0 0 6px}.sub{color:var(--muted);margin:0 0 22px;line-height:1.5}
+.option{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin:10px 0;cursor:pointer;font-size:16px}
+.option:hover,.option.selected{border-color:var(--accent);background:var(--accent2)}
+.option strong{display:block;margin-bottom:4px}.small{color:var(--muted);font-size:14px}
+button.vote{width:100%;border:0;border-radius:12px;padding:14px;background:var(--accent);color:#fff;font-weight:700;font-size:16px;cursor:pointer;margin-top:8px}
+button.vote:disabled{opacity:.5;cursor:not-allowed}
+.status{min-height:24px;margin:12px 0;color:var(--muted);font-size:14px}
+.result{border-top:1px solid var(--line);margin-top:20px;padding-top:20px}.row{margin:15px 0}.line{display:flex;justify-content:space-between;gap:12px}.bar{height:10px;background:#e9edf3;border-radius:10px;overflow:hidden;margin-top:7px}.fill{height:100%;background:var(--accent);border-radius:10px;width:0;transition:width .3s}
+.total{font-size:14px;color:var(--muted);margin-top:14px}.notice{margin-top:18px;padding:12px 14px;background:#f8fafc;border-radius:12px;color:var(--muted);font-size:13px;line-height:1.45}
+@media(max-width:380px){h1{font-size:24px}.card{padding:18px}}
+</style>
+</head>
+<body>
+<main>
+<section class="card">
+<h1>🎉 Clube dos 50</h1>
+<p class="sub">Votação para definir a data do nosso encontro e confraternização.</p>
+
+<div id="choices">
+<button class="option" data-value="25"><strong>🗓️ 25 de Setembro</strong><span class="small">Manter a data inicialmente prevista.</span></button>
+<button class="option" data-value="09"><strong>🗓️ 09 de Outubro</strong><span class="small">Alterar para a nova data sugerida.</span></button>
+<button class="option" data-value="any"><strong>🤝 Qualquer uma das datas</strong><span class="small">Estou disponível nas duas datas.</span></button>
+</div>
+
+<button id="vote" class="vote" disabled>Registar o meu voto</button>
+<div id="status" class="status" aria-live="polite"></div>
+
+<div class="result">
+<h2 style="font-size:19px;margin:0">Resultado</h2>
+<div class="row"><div class="line"><span>25 de Setembro</span><strong id="c25">0</strong></div><div class="bar"><div id="p25" class="fill"></div></div></div>
+<div class="row"><div class="line"><span>09 de Outubro</span><strong id="c09">0</strong></div><div class="bar"><div id="p09" class="fill"></div></div></div>
+<div class="row"><div class="line"><span>Qualquer uma</span><strong id="cany">0</strong></div><div class="bar"><div id="pany" class="fill"></div></div></div>
+<div id="total" class="total">0 votos registados</div>
+</div>
+
+<div class="notice">
+<strong>Como funciona:</strong> cada participante deve escolher uma opção e votar uma vez. 
+A votação oficial deve ser ligada a uma base de dados/serviço online para que todos os votos sejam partilhados entre os membros.
+</div>
+</section>
+</main>
+<script>
+const choices=document.querySelectorAll('.option'), vote=document.querySelector('#vote'), status=document.querySelector('#status');
+let selected=null;
+choices.forEach(b=>b.addEventListener('click',()=>{
+ selected=b.dataset.value; choices.forEach(x=>x.classList.toggle('selected',x===b));
+ vote.disabled=false; status.textContent='Opção selecionada. Agora toque em “Registar o meu voto”.';
+}));
+vote.addEventListener('click',()=>{
+ if(!selected)return;
+ const key='club50_demo_'+selected;
+ const old=Number(localStorage.getItem(key)||0); localStorage.setItem(key,old+1);
+ status.textContent='Voto registado neste dispositivo. Para uma votação oficial partilhada, publique esta página com uma base de dados online.';
+ selected=null; choices.forEach(x=>x.classList.remove('selected')); vote.disabled=true; render();
+});
+function render(){
+ const n25=Number(localStorage.getItem('club50_demo_25')||0),n09=Number(localStorage.getItem('club50_demo_09')||0),na=Number(localStorage.getItem('club50_demo_any')||0),t=n25+n09+na;
+ [['c25','p25',n25],['c09','p09',n09],['cany','pany',na]].forEach(([c,p,n])=>{document.getElementById(c).textContent=n;document.getElementById(p).style.width=(t?n/t*100:0)+'%'});
+ document.getElementById('total').textContent=t+' voto'+(t===1?'':'s')+' registado'+(t===1?'':'s');
+}
+render();
+</script>
+</body>
+</html>
